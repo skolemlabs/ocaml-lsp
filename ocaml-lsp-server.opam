@@ -31,7 +31,6 @@ depends: [
   "xdg"
   "ordering"
   "dune-build-info"
-  "spawn"
   "odoc-parser" {>= "2.0.0"}
   "ppx_expect" {>= "v0.15.0" & with-test}
   "ocamlformat" {with-test & = "0.24.1"}
