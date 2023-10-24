@@ -31,7 +31,9 @@ depends: [
   "xdg"
   "ordering"
   "dune-build-info"
-  "odoc-parser" {>= "2.0.0"}
+  "spawn"
+  "astring"
+  "camlp-streams"
   "ppx_expect" {>= "v0.15.0" & with-test}
   "ocamlformat" {with-test & = "0.24.1"}
   "ocamlc-loc" {>= "3.7.0"}

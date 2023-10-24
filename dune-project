@@ -55,7 +55,9 @@ possible and does not make any assumptions about IO.
   xdg
   ordering
   dune-build-info
-  (odoc-parser (>= 2.0.0))
+  spawn
+  astring
+  camlp-streams
   (ppx_expect (and (>= v0.15.0) :with-test))
   (ocamlformat (and :with-test (= 0.24.1)))
   (ocamlc-loc (>= 3.7.0))

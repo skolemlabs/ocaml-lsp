@@ -2,17 +2,9 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    opam-nix = {
-      url = "github:tweag/opam-nix";
-      inputs.opam-repository.follows = "opam-repository";
-    };
-    opam-repository = {
-      url = "github:ocaml/opam-repository";
-      flake = false;
-    };
   };
 
-  outputs = { self, flake-utils, opam-nix, opam-repository, nixpkgs, ... }@inputs:
+  outputs = { self, flake-utils, nixpkgs, ... }@inputs:
     let
       package = "ocaml-lsp-server";
       overlay = final: prev: {
@@ -49,7 +41,6 @@
         inherit (pkgs.ocamlPackages) buildDunePackage;
         fast = rec {
 
-          # these packages do not use opam2nix
           jsonrpc = buildDunePackage {
             pname = "jsonrpc";
             version = "n/a";
@@ -101,50 +92,16 @@
               ppx_yojson_conv_lib
               uutf
               lsp
-              odoc-parser
+              astring
+              camlp-streams
               merlin-lib
             ];
             doCheck = false;
           };
         };
-        on = opam-nix.lib.${system};
-        localPackages = {
-          jsonrpc = "*";
-          lsp = "*";
-          ocaml-lsp-server = "*";
-        };
-        devPackages = {
-          menhir = "*";
-          ppx_yojson_conv = "*";
-          cinaps = "*";
-          ppx_expect = "*";
-          ocamlfind = "1.9.2";
-        };
-        packagesFromNames = set:
-          (builtins.map (s: builtins.getAttr s scope)
-            (builtins.attrNames set));
-        allPackages = localPackages // devPackages;
-        scope =
-          (
-            let
-              scope =
-                on.buildOpamProject
-                  {
-                    repos = [ opam-repository ];
-                    inherit pkgs;
-                    resolveArgs = { with-test = true; };
-                  }
-                  package
-                  ./.
-                  (allPackages);
-            in
-            scope.overrideScope' overlay
-          );
-        opam2nixPackages = nixpkgs.lib.filterAttrs (name: value: builtins.hasAttr name localPackages) scope;
       in
       {
         packages =
-          opam2nixPackages //
           rec {
             # we have a package without opam2nix for easy consumption for nix users
             default = pkgs.ocamlPackages.buildDunePackage {
@@ -154,7 +111,8 @@
               duneVersion = "3";
               buildInputs = with pkgs.ocamlPackages; [
                 ocamlc-loc
-                odoc-parser
+                astring
+                camlp-streams
                 dune-build-info
                 re
                 dune-rpc
@@ -181,23 +139,15 @@
                 dune build ${package}.install --release ''${enableParallelBuilding:+-j $NIX_BUILD_CORES}
                 runHook postBuild
               '';
+              meta = {
+                mainProgram = "ocamllsp";
+              };
             };
 
             ocaml-lsp = fast.ocaml-lsp;
           };
 
         devShells = {
-          opam2nix = pkgs.mkShell {
-            buildInputs = (with pkgs;
-              [
-                # dev tools
-                ocamlformat_0_24_1
-                yarn
-                dune-release
-              ]) ++ packagesFromNames devPackages;
-            inputsFrom = packagesFromNames opam2nixPackages;
-          };
-
           default = pkgs.mkShell {
             buildInputs = (with pkgs;
               [
