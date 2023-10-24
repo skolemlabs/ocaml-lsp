@@ -31,7 +31,6 @@ depends: [
   "xdg"
   "ordering"
   "dune-build-info"
-  "spawn"
   "astring"
   "camlp-streams"
   "ppx_expect" {>= "v0.15.0" & with-test}
